@@ -1,13 +1,20 @@
-document.querySelector('.login-button').addEventListener('click', () => {
+document.querySelector('.login-button').addEventListener('click', function() {
     const email = document.querySelector('input[type="email"]').value;
     const password = document.querySelector('input[type="password"]').value;
 
-    fetch('http://localhost:3000/api/login', {
+    if (!email || !password) {
+        alert('Please fill in both fields.');
+        return;
+    }
+
+    const data = { email, password };
+
+    fetch('http://localhost:5000/api/login', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(data)
     })
     .then(response => {
         if (!response.ok) {
@@ -16,14 +23,28 @@ document.querySelector('.login-button').addEventListener('click', () => {
         return response.json();
     })
     .then(data => {
-        console.log('Login successful', data);
-        // Save token to local storage or handle as needed
-        localStorage.setItem('token', data.token);
         alert('Login successful!');
-        // Redirect to another page if necessary
+        console.log(data); // Log user data or token if returned
+        
+        return fetch('http://localhost:5000/api/user-data', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${data.token}`
+            }
+        });
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+        }
+        return response.json();
+    })
+    .then(userData => {
+        console.log('Fetched user data:', userData);
+        // You can process and display user data here
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Invalid email or password');
+        alert('Error: ' + error.message);
     });
 });
