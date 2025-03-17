@@ -1,3 +1,0 @@
-install mongosh >>
-
-mongosh "mongodb+srv://mickldes1:YszYZVUcVPj5nRoN@etender.xmhjj.mongodb.net/?retryWrites=true&w=majority&appName=etender"
