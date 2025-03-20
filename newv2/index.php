@@ -1,8 +1,8 @@
 <?php
 
-$dsn = 'mysql:host=mariadb.vamk.fi;dbname=e2301469_;charset=utf8';
-$db_username = 'e2301469';  
-$db_password = 'NZHYAuR8dEQ';
+$dsn = "mysql:host=mariadb.vamk.fi;dbname=e2301469_;charset=utf8";
+$db_username = "e2301469";
+$db_password = "NZHYAuR8dEQ";
 
 try {
     $pdo = new PDO($dsn, $db_username, $db_password);
@@ -15,9 +15,6 @@ $stmt = $pdo->prepare("SELECT * FROM tenders");
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $tenders = $result;
-
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -129,11 +126,19 @@ $tenders = $result;
       <?php if (!empty($tenders)): ?>
         <?php foreach ($tenders as $tender): ?>
           <div class="tender-card">
-            <h3><?php echo htmlspecialchars($tender['tender_name']); ?></h3>
-            <p><strong>Bidding price:</strong> <?php echo htmlspecialchars($tender['bidding_price']); ?></p>
-            <p><strong>Winning company:</strong> <?php echo htmlspecialchars($tender['winning_company']); ?></p>
-            <p><strong>Bidding price of winning company:</strong> <?php echo htmlspecialchars($tender['winning_price']); ?></p>
-            <button onclick="location.href='moreinfo.php?tender=<?php echo $tender['id']; ?>'">More Info</button>
+            <h3><?php echo htmlspecialchars($tender["tender_name"]); ?></h3>
+            <p><strong>Bidding price:</strong> <?php echo htmlspecialchars(
+                $tender["bidding_price"]
+            ); ?></p>
+            <p><strong>Winning company:</strong> <?php echo htmlspecialchars(
+                $tender["winning_company"]
+            ); ?></p>
+            <p><strong>Bidding price of winning company:</strong> <?php echo htmlspecialchars(
+                $tender["winning_price"]
+            ); ?></p>
+            <button onclick="location.href='moreinfo.php?tender=<?php echo $tender[
+                "id"
+            ]; ?>'">More Info</button>
           </div>
         <?php endforeach; ?>
       <?php else: ?>
@@ -143,8 +148,3 @@ $tenders = $result;
   </div>
 </body>
 </html>
-
-<?php
-// Close the database connection
-$conn->close();
-?>
