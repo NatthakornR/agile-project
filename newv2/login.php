@@ -1,10 +1,9 @@
 <?php
 session_start();
 
-// Database connection settings
-$dsn = 'mysql:host=mariadb.vamk.fi;dbname=e2301469_;charset=utf8';
-$db_username = 'e2301469';  
-$db_password = 'NZHYAuR8dEQ';// update with your DB password
+$dsn = "mysql:host=mariadb.vamk.fi;dbname=e2301469_;charset=utf8";
+$db_username = "e2301469";
+$db_password = "NZHYAuR8dEQ"; 
 
 try {
     $pdo = new PDO($dsn, $db_username, $db_password);
@@ -13,34 +12,30 @@ try {
     die("DB connection failed: " . $e->getMessage());
 }
 
-// Handle logout request
-if (isset($_GET['action']) && $_GET['action'] == 'logout') {
+if (isset($_GET["action"]) && $_GET["action"] == "logout") {
     session_destroy();
     header("Location: index.php");
-    exit;
+    exit();
 }
 
-// Handle login form submission
-if (isset($_POST['action']) && $_POST['action'] == 'login') {
-    $user = $_POST['username'];
-    $pass = $_POST['password'];
+if (isset($_POST["action"]) && $_POST["action"] == "login") {
+    $user = $_POST["username"];
+    $pass = $_POST["password"];
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
     $stmt->execute([$user]);
     $userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($userData && ($pass == $userData['password'])) {
-        $_SESSION['user'] = $userData;
+    if ($userData && $pass == $userData["password"]) {
+        $_SESSION["user"] = $userData;
         header("Location: login.php");
-        exit;
+        exit();
     } else {
         $error = "Invalid credentials!";
     }
 }
 
-// If the user is not logged in, show the login form.
-if (!isset($_SESSION['user'])):
-?>
+if (!isset($_SESSION["user"])): ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -101,7 +96,9 @@ if (!isset($_SESSION['user'])):
 <body>
     <div class="login-container"> 
     <h2>Log In</h2>
-    <?php if(isset($error)) { echo "<p style='color:red;'>$error</p>"; } ?>
+    <?php if (isset($error)) {
+        echo "<p style='color:red;'>$error</p>";
+    } ?>
     <form method="post"action="login.php">
     <input type="hidden" name="action" value="login">
       <input type="text" name="username" placeholder="Email (City or Company)" required>
@@ -112,13 +109,10 @@ if (!isset($_SESSION['user'])):
     </div>
 </body>
 </html>
-<?php
-exit;
-endif;
+<?php exit();endif;
 
-// Get the logged-in user's data
-$user = $_SESSION['user'];
-$userType = $user['user_type'];
+$user = $_SESSION["user"];
+$userType = $user["user_type"];
 ?>
 <!DOCTYPE html>
 <html>
@@ -149,39 +143,47 @@ $userType = $user['user_type'];
     <header>
         <h1>E-Tendering</h1>
         <nav>
-        <!-- If user is not logged in, show Login; if logged in, show Logout or other links -->
-        <a href="home.html">Home</a>
+        <a href="index.php">Home</a>
         </nav>
     </header>
 
-    <h1>Welcome, <?php echo htmlspecialchars($user['username']); ?> (<?php echo htmlspecialchars($userType); ?>)</h1>
+    <h1>Welcome, <?php echo htmlspecialchars(
+        $user["username"]
+    ); ?> (<?php echo htmlspecialchars($userType); ?>)</h1>
     <p><a href="login.php?action=logout">Logout</a></p>
     <hr>
 
-    <?php
-    // If user is a city, show tender creation form and process submissions.
-    if ($userType == 'city'):
-        if (isset($_POST['action']) && $_POST['action'] == 'create_tender') {
-            $description = $_POST['description'];
-            $bidding_price = $_POST['bidding_price'];
-            $duration = $_POST['duration'];
-            
-            // Handle document upload (if any)
+    <?php 
+    if ($userType == "city"):
+        if (isset($_POST["action"]) && $_POST["action"] == "create_tender") {
+            $description = $_POST["description"];
+            $bidding_price = $_POST["bidding_price"];
+            $duration = $_POST["duration"];
             $document = null;
-            if (isset($_FILES['document']) && $_FILES['document']['error'] == 0) {
-                $uploadDir = 'uploads/';
+            if (
+                isset($_FILES["document"]) &&
+                $_FILES["document"]["error"] == 0
+            ) {
+                $uploadDir = "uploads/";
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
-                $document = $uploadDir . basename($_FILES['document']['name']);
-                move_uploaded_file($_FILES['document']['tmp_name'], $document);
+                $document = $uploadDir . basename($_FILES["document"]["name"]);
+                move_uploaded_file($_FILES["document"]["tmp_name"], $document);
             }
-            
-            $stmt = $pdo->prepare("INSERT INTO tenders (city_id, description, bidding_price, duration, document) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$user['id'], $description, $bidding_price, $duration, $document]);
+
+            $stmt = $pdo->prepare(
+                "INSERT INTO tenders (city_id, description, bidding_price, duration, document) VALUES (?, ?, ?, ?, ?)"
+            );
+            $stmt->execute([
+                $user["id"],
+                $description,
+                $bidding_price,
+                $duration,
+                $document,
+            ]);
             echo "<p style='color:green;'>Tender created successfully!</p>";
-        }
-    ?>
+        } ?>
         <h2>Create Tender</h2>
         <form method="post" action="login.php" enctype="multipart/form-data">
             <input type="hidden" name="action" value="create_tender">
@@ -196,59 +198,75 @@ $userType = $user['user_type'];
             <button type="submit">Create Tender</button>
         </form>
     <?php
-    // If user is a company, show available tenders with application form.
-    elseif ($userType == 'company'):
-        if (isset($_POST['action']) && $_POST['action'] == 'apply_tender') {
-            $tender_id = $_POST['tender_id'];
-            $bidding_price = $_POST['bidding_price'];
-            
-            // Handle document upload (if any)
+    elseif ($userType == "company"):
+        if (isset($_POST["action"]) && $_POST["action"] == "apply_tender") {
+            $tender_id = $_POST["tender_id"];
+            $bidding_price = $_POST["bidding_price"];
+
             $document = null;
-            if (isset($_FILES['document']) && $_FILES['document']['error'] == 0) {
-                $uploadDir = 'uploads/';
+            if (
+                isset($_FILES["document"]) &&
+                $_FILES["document"]["error"] == 0
+            ) {
+                $uploadDir = "uploads/";
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
-                $document = $uploadDir . basename($_FILES['document']['name']);
-                move_uploaded_file($_FILES['document']['tmp_name'], $document);
+                $document = $uploadDir . basename($_FILES["document"]["name"]);
+                move_uploaded_file($_FILES["document"]["tmp_name"], $document);
             }
-            
-            $stmt = $pdo->prepare("INSERT INTO tender_applications (tender_id, company_id, bidding_price, document) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$tender_id, $user['id'], $bidding_price, $document]);
+
+            $stmt = $pdo->prepare(
+                "INSERT INTO tender_applications (tender_id, company_id, bidding_price, document) VALUES (?, ?, ?, ?)"
+            );
+            $stmt->execute([
+                $tender_id,
+                $user["id"],
+                $bidding_price,
+                $document,
+            ]);
             echo "<p style='color:green;'>Application submitted successfully!</p>";
-        }
-    ?>
+        } ?>
         <h2>Available Tenders</h2>
         <?php
-        // Fetch and display all tenders (customize the query as needed, e.g., only active tenders)
         $stmt = $pdo->query("SELECT * FROM tenders ORDER BY created_at DESC");
         $tenders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if (count($tenders) > 0) {
             foreach ($tenders as $tender) {
+
                 echo "<div style='border:1px solid #ccc; padding:10px; margin-bottom:10px;'>";
-                echo "<p><strong>Description:</strong> " . htmlspecialchars($tender['description']) . "</p>";
-                echo "<p><strong>Bidding Price:</strong> " . htmlspecialchars($tender['bidding_price']) . "</p>";
-                echo "<p><strong>Duration:</strong> " . htmlspecialchars($tender['duration']) . " days</p>";
-                if ($tender['document']) {
-                    echo "<p><a href='" . htmlspecialchars($tender['document']) . "' target='_blank'>View Document</a></p>";
+                echo "<p><strong>Description:</strong> " .
+                    htmlspecialchars($tender["description"]) .
+                    "</p>";
+                echo "<p><strong>Bidding Price:</strong> " .
+                    htmlspecialchars($tender["bidding_price"]) .
+                    "</p>";
+                echo "<p><strong>Duration:</strong> " .
+                    htmlspecialchars($tender["duration"]) .
+                    " days</p>";
+                if ($tender["document"]) {
+                    echo "<p><a href='" .
+                        htmlspecialchars($tender["document"]) .
+                        "' target='_blank'>View Document</a></p>";
                 }
                 ?>
                 <form method="post" action="login.php" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="apply_tender">
-                    <input type="hidden" name="tender_id" value="<?php echo $tender['id']; ?>">
+                    <input type="hidden" name="tender_id" value="<?php echo $tender[
+                        "id"
+                    ]; ?>">
                     <label>Bidding Price:</label>
                     <input type="number" step="0.01" name="bidding_price" required><br>
                     <label>Document:</label>
                     <input type="file" name="document"><br>
                     <button type="submit">Apply</button>
                 </form>
-                <?php
-                echo "</div>";
+                <?php echo "</div>";
             }
         } else {
             echo "<p>No tenders available at the moment.</p>";
         }
-    endif;
-    ?>
+
+    endif; ?>
 </body>
 </html>
