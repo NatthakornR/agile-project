@@ -1,8 +1,8 @@
 <?php
 session_start();
-$dsn = 'mysql:host=mariadb.vamk.fi;dbname=e2301469_;charset=utf8';
-$db_username = 'e2301469';  
-$db_password = 'NZHYAuR8dEQ';
+$dsn = "mysql:host=mariadb.vamk.fi;dbname=e2301469_;charset=utf8";
+$db_username = "e2301469";
+$db_password = "NZHYAuR8dEQ";
 
 try {
     $pdo = new PDO($dsn, $db_username, $db_password);
@@ -11,11 +11,9 @@ try {
     die("DB connection failed: " . $e->getMessage());
 }
 
-// Get the tender_id from the URL query string
-if (isset($_GET['tender'])) {
-    $tender_id = intval($_GET['tender']);
+if (isset($_GET["tender"])) {
+    $tender_id = intval($_GET["tender"]);
 
-    // Fetch tender details from the tenders table
 
     $stmt = $pdo->prepare("SELECT * FROM tenders WHERE id = $tender_id");
     $stmt->execute();
@@ -24,8 +22,9 @@ if (isset($_GET['tender'])) {
 
     $tender = $tender_result;
 
-    // Fetch companies that applied for this tender
-    $stmt = $pdo->prepare("SELECT * FROM tender_applications WHERE tender_id = $tender_id");
+    $stmt = $pdo->prepare(
+        "SELECT * FROM tender_applications WHERE tender_id = $tender_id"
+    );
     $stmt->execute();
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $companies_result = $result;
@@ -94,54 +93,53 @@ if (isset($_GET['tender'])) {
   <header>
     <h1>E-Tendering</h1>
     <nav>
-      <a href="home.html">Home</a>
+      <a href="index.php">Home</a>
     </nav>
   </header>
 
   <div class="container">
-    <!-- Show the tender details dynamically -->
-    <h2><?php echo htmlspecialchars($tender['tender_name']); ?></h2>
+    <h2><?php echo htmlspecialchars($tender["tender_name"]); ?></h2>
     <div class="tender-details">
-      <p><strong>Bidding price:</strong> <?php echo htmlspecialchars($tender['bidding_price']); ?></p>
-      <p><strong>Winning company:</strong> <?php echo htmlspecialchars($tender['winning_company']); ?></p>
-      <p><strong>Bidding price of winning company:</strong> <?php echo htmlspecialchars($tender['winning_price']); ?></p>
-      <p><strong>Information about Tender:</strong> <?php echo htmlspecialchars($tender['tender_info']); ?></p>
+      <p><strong>Bidding price:</strong> <?php echo htmlspecialchars(
+          $tender["bidding_price"]
+      ); ?></p>
+      <p><strong>Winning company:</strong> <?php echo htmlspecialchars(
+          $tender["winning_company"]
+      ); ?></p>
+      <p><strong>Bidding price of winning company:</strong> <?php echo htmlspecialchars(
+          $tender["winning_price"]
+      ); ?></p>
+      <p><strong>Information about Tender:</strong> <?php echo htmlspecialchars(
+          $tender["tender_info"]
+      ); ?></p>
     </div>
 
-    <!-- List of companies that have applied -->
     <div class="company-list">
       <h3>Companies Applied</h3>
       <?php if (count($companies) > 0): ?>
         <ul>
           <?php foreach ($companies as $company): ?>
-            <li><?php echo htmlspecialchars($company['company_name']); ?> - Bidding Price: <?php echo htmlspecialchars($company['bidding_price']); ?></li>
+            <li><?php echo htmlspecialchars(
+                $company["company_name"]
+            ); ?> - Bidding Price: <?php echo htmlspecialchars(
+     $company["bidding_price"]
+ ); ?></li>
           <?php endforeach; ?>
         </ul>
       <?php else: ?>
         <p>No companies have applied yet.</p>
       <?php endif; ?>
     </div>
-    <?php
-    if (isset($_SESSION['user'])):
-      ?>
-    <!-- Registration form for companies to apply for the tender -->
+    <?php if (isset($_SESSION["user"])): ?>
     <div class="register-container">
     <h2>Register for Tender</h2>
-    <!-- 
-      In a real application, you'd dynamically fill 'tender_id' (e.g., from a query param).
-      Also, you'd identify the user from session (company_id), so they wouldn't manually enter "company name" unless needed. 
-    -->
+ 
     <form action="register.php" method="POST" enctype="multipart/form-data">
-      <!-- Hidden action so the backend knows to apply for a tender -->
       <input type="hidden" name="action" value="apply_tender">
 
-      <!-- Example: hidden tender_id (or display it as read-only if you prefer) -->
-      <input type="hidden" name="tender_id" value= <?php echo htmlspecialchars($tender_id); ?>>
-
-      <!-- According to your schema, 'company_id' is usually from session. 
-           But if you want the user to see or confirm their company name, 
-           you can ask them to type it (or show it read-only).
-      -->
+      <input type="hidden" name="tender_id" value= <?php echo htmlspecialchars(
+          $tender_id
+      ); ?>>
       <label for="company_name">Company Name</label>
       <input type="text" id="company_name" name="company_name" placeholder="e.g. ABC Corp" required>
 
@@ -153,13 +151,11 @@ if (isset($_GET['tender'])) {
 
       <button type="submit">Submit Application</button>
     </form>
-    <a href="index.html" class="back-link">Back to Home</a>
+    <a href="index.php" class="back-link">Back to Home</a>
   </div>
 
-    <a href="home.html" class="back-button">Back</a>
+    <a href="index.php" class="back-button">Back</a>
   </div>
-  <?php
-exit;
-endif; ?>
+  <?php exit();endif; ?>
 </body>
 </html>
